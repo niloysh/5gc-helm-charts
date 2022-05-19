@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: 0.1.2
+description: A Helm chart to deploy the user plane of free5gc
+icon: https://upload.wikimedia.org/wikipedia/commons/6/6f/5G_logo.jpg
+maintainers:
+- email: abderaouf.khichane@orange.com
+  name: Abderaouf KHICHANE
+- email: ilhem.fajjari@orange.com
+  name: Ilhem FAJJARI
+name: networks5g
+version: 0.1.2

@@ -1,0 +1,98 @@
+#
+# Software Name : towards5gs-helm
+# SPDX-FileCopyrightText: Copyright (c) 2021 Orange
+# SPDX-License-Identifier: Apache-2.0
+#
+# This software is distributed under the Apache License 2.0,
+# the text of which is available at todo
+# or see the "LICENSE" file for more details.
+#
+# Author: Abderaouf KHICHANE, Ilhem FAJJARI, Ayoub BOUSSELMI
+# Software description: An open-source project providing Helm charts to deploy 5G components (Core + RAN) on top of Kubernetes
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.upf1.name }}
+  labels:
+    project: {{ .Values.global.projectName }}
+    nf: {{ .Values.upf1.name }}
+spec:
+  selector:
+    matchLabels:
+      project: {{ .Values.global.projectName }}
+      nf: {{ .Values.upf1.name }}
+  replicas: {{ .Values.upf1.replicaCount }}
+  template:
+    metadata:
+      labels:
+        project: {{ .Values.global.projectName }}
+        nf: {{ .Values.upf1.name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/upf1/upf1-configmap.yaml") . | sha256sum }}
+{{- if or (not .Values.global.ovn4nfv.enabled) (not .Values.global.upf.service.pfcp.enabled) }}
+        k8s.v1.cni.cncf.io/networks: '[
+{{- if not .Values.global.ovn4nfv.enabled }}
+          { "name": "{{ .Values.global.n3network.name }}"
+          , "interface": "n3"
+          , "ips": [ "{{ .Values.global.upf1.n3if.ipAddress }}/{{ .Values.global.n3network.cidr }}" ] }
+          ,
+          { "name": "{{ .Values.global.n6network.name }}"
+          , "interface": "n6"
+          , "ips": [ "{{ .Values.global.upf1.n6if.ipAddress }}/{{ .Values.global.n6network.cidr }}" ] }{{- end }}
+          {{- if and (not .Values.global.upf.service.pfcp.enabled) (not .Values.global.ovn4nfv.enabled) }},{{- end }}
+{{- if not .Values.global.upf.service.pfcp.enabled }}
+          { "name": "{{ .Values.global.n4network.name }}"
+          , "interface": "n4"
+          , "ips": [ "{{ .Values.global.upf1.n4if.ipAddress }}/{{ .Values.global.n4network.cidr }}" ] }
+{{- end }}
+          ]'
+{{- end }}
+    spec:
+      nodeSelector:
+        disktype: ssd
+      containers:
+      - image: busybox
+        name: upf1-packet-count-logs
+        args: [/bin/sh, -c, 'while ! tail -f /var/log/upf-slice-info.log 2>/dev/null ; do sleep 1 ; done']
+        volumeMounts:
+        - mountPath: /var/log/
+          name: varlog
+      - image: {{ .Values.upf.image.registry }}/{{ .Values.upf.image.name }}:{{ .Values.upf.image.tag }}
+        name: {{ .Values.upf1.name }}
+        imagePullPolicy: Always
+        ports:
+        - name: n4
+          containerPort: {{ .Values.global.upf.service.pfcp.port }}
+          protocol: {{ .Values.global.upf.service.pfcp.protocol }}
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+        command: ["/free5gc/config/wrapper.sh"]
+        # command: [ "/bin/bash", "-c", "--" ]
+        # args: [ "while true; do sleep 30; done;" ]
+        volumeMounts:
+        - mountPath: {{ .Values.upf.volume.mount }}
+          name: {{ .Values.upf1.volume.name }}
+        - mountPath: /var/log/
+          name: varlog
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "750m"
+      restartPolicy: Always
+      volumes:
+      - name: {{ .Values.upf1.volume.name }}
+        configMap:
+          name: {{ .Values.upf1.configmap.name }}
+          items:
+          - key: upfcfg1.yaml
+            path: upfcfg.yaml
+          - key: wrapper.sh
+            path: wrapper.sh
+            mode: 0777
+      - name: varlog
+        emptyDir: {}
