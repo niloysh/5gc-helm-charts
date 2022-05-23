@@ -214,6 +214,6 @@ data:
 {{- end }}
     cp /free5gc/config2/smfcfg.yaml {{ .Values.volume.mount }}
 {{- end }}
-    /free5gc/smf/updated-smf -smfcfg {{ .Values.volume.mount }}smfcfg.yaml 
+    /free5gc/smf -smfcfg {{ .Values.volume.mount }}smfcfg.yaml 
 {{- end }}
 

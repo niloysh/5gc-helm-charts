@@ -245,7 +245,7 @@ smf:
   image:
     registry: niloysh
     name: free5gc-smf
-    tag: "v1.0"
+    tag: "v3.0.5-testing"
   port: 80
   service:
     pfcp:
