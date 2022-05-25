@@ -49,8 +49,18 @@ spec:
           ]'
 {{- end }}
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: nodetype
+                operator: In
+                values:
+                - userplane
+            topologyKey: kubernetes.io/hostname
       nodeSelector:
-        disktype: ssd
+        nodetype: userplane
       containers:
       - image: busybox
         name: upf1-packet-count-logs

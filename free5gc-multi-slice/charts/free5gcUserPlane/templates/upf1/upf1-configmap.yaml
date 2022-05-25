@@ -55,7 +55,5 @@ data:
     # echo "1200 n6if" >> /etc/iproute2/rt_tables # create a routing table for the interface N6
     # ip rule add from {{ .Values.global.uesubnet }} table n6if   # use the created ip table to route the traffic comming from the UE SUBNET 
     ip route add default via {{ .Values.global.n6network.gatewayIP }} dev n6 table n6if  # add a default route in the created table so that all UEs will use this gateway for external communications (target IP not in the Data Network attached to the interface N6) and then the Data Network will manage to route the traffic
-    # tc qdisc add dev eth0 root netem delay {{ .Values.global.upf1.delayMs }}ms
-    tc qdisc add dev eth0 root tbf rate {{ .Values.global.upf1.bw_kbit }}kbit latency {{ .Values.global.upf1.delayMs }}ms burst 1540
     /free5gc/free5gc-upfd -f /free5gc/config/upfcfg.yaml
   

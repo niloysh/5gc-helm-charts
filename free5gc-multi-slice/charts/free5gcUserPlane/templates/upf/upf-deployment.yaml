@@ -46,8 +46,23 @@ spec:
         k8s.plugin.opnfv.org/nfn-network: '{ "type": "ovn4nfv", "interface": [{ "name": "{{ .Values.global.ovn4nfv.n6network.name }}", "ipAddress":"{{ .Values.global.upf.n6if.ipAddress }}", "interface": "n6" , "defaultGateway": "false"}, { "name": "{{ .Values.global.ovn4nfv.n3network.name }}", "ipAddress": "{{ .Values.global.upf.n3if.ipAddress }}", "interface": "n3" , "defaultGateway": "false"}]}'
 {{- end }}
     spec:
+
+      # don't schedule two UPF pods on the same host
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: nodetype
+                operator: In
+                values:
+                - userplane
+            topologyKey: kubernetes.io/hostname
+      
+      # only schedule UPFs on nodes with gtp5g installed
+      # these nodes are labeled as userplane
       nodeSelector:
-        disktype: ssd
+        nodetype: userplane
       containers:
       - image: busybox
         name: upf-packet-count-logs
