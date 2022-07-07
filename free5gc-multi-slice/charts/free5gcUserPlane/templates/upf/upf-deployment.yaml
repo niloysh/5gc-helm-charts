@@ -18,17 +18,20 @@ metadata:
   labels:
     project: {{ .Values.global.projectName }}
     nf: {{ .Values.upf.name }}
+    app: {{ .Values.upf.name }}
 spec:
   selector:
     matchLabels:
       project: {{ .Values.global.projectName }}
       nf: {{ .Values.upf.name }}
+      app: {{ .Values.upf.name }}
   replicas: {{ .Values.upf.replicaCount }}
   template:
     metadata:
       labels:
         project: {{ .Values.global.projectName }}
         nf: {{ .Values.upf.name }}
+        app: {{ .Values.upf.name }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/upf/upf-configmap.yaml") . | sha256sum }}
 {{- if or (not .Values.global.ovn4nfv.enabled) (not .Values.global.upf.service.pfcp.enabled) }}
@@ -64,9 +67,20 @@ spec:
       nodeSelector:
         nodetype: userplane
       containers:
-      - image: busybox
-        name: upf-packet-count-logs
-        args: [/bin/sh, -c, 'while ! tail -f /var/log/upf-slice-info.log 2>/dev/null; do sleep 1 ; done']
+      - image: niloysh/upf-exporter:v1.1
+        name: upf-exporter
+        imagePullPolicy: Always
+        ports:
+        - name: metrics
+          containerPort: 9000
+
+        # Just spin & wait forever
+        # command: [ "/bin/bash", "-c", "--" ]
+        # args: [ "while true; do sleep 30; done;" ]
+
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "python -u upf-exporter.py" ]
+
         volumeMounts:
         - mountPath: /var/log/
           name: varlog

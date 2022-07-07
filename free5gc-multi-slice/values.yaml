@@ -105,11 +105,12 @@ global:
   gnb:
     n3if:
       ipAddress: 10.100.50.236
+
 #Global network parametes
   n2network:
     enabled: true
     name: n2network
-    masterIf: ens3
+    masterIf: eno1
     subnetIP: 10.100.50.248
     cidr: 29
     gatewayIP: 10.100.50.254
@@ -117,7 +118,7 @@ global:
   n4network:
     enabled: true
     name: n4network
-    masterIf: ens3
+    masterIf: eno1
     subnetIP: 10.100.50.240
     cidr: 29
     gatewayIP: 10.100.50.246
@@ -125,7 +126,7 @@ global:
   n3network:
     enabled: true
     name: n3network
-    masterIf: ens3
+    masterIf: eno1
     subnetIP: 10.100.50.232
     cidr: 29
     gatewayIP: 10.100.50.238
@@ -133,7 +134,7 @@ global:
   n6network:
     enabled: true
     name: n6network
-    masterIf: ens3
+    masterIf: eno1
     subnetIP: 10.100.100.0
     cidr: 24
     gatewayIP: 10.100.100.1

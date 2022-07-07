@@ -106,7 +106,7 @@ upf:
   image:
     registry: niloysh
     name: free5gc-upf
-    tag: "v3.0.5-testing"
+    tag: "v3.0.5-testing-v1.1"
   configmap:
     name: upf-configmap
   volume:
